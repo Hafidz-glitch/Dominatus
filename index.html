@@ -1,370 +1,728 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dominatus AI by Hafidz Nugraha</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Söhne', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-        }
+<html lang="en">  
+<head>  
+  <meta charset="UTF-8">  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+  <title>Dominatus AI by Hafidz Nugraha</title>  
+  <style>  
+    /* Global Styles */  
+    * {  
+      margin: 0;  
+      padding: 0;  
+      box-sizing: border-box;  
+      font-family: 'Roboto', sans-serif;  
+    }  
+    body {  
+      background-color: #343541; /* Mirip background ChatGPT dark */  
+      color: #e4e4e7;  
+      line-height: 1.6;  
+    }  
+    .container {  
+      display: flex;  
+      flex-direction: column;  
+      height: 100vh;  
+    }  
+    .header {  
+      background-color: #202123;  
+      padding: 16px;  
+      border-bottom: 1px solid #444654;  
+      /* Pindahkan nama ke kiri */  
+      text-align: left;  
+      padding-left: 20px;  
+    }  
+    .header h1 {  
+      color: #ffffff;  
+      font-size: 1.2em;  
+      margin-bottom: 4px;  
+    }  
+    /* Sembunyikan "Created by Hafidz Nugraha" */  
+    .header .creator {  
+      display: none;  
+    }  
+    .settings {  
+      background-color: #202123;  
+      padding: 12px 20px;  
+      display: flex;  
+      align-items: center;  
+      border-bottom: 1px solid #444654;  
+      position: relative;  
+    }  
+    /* Buat anak pertama dan kedua (Axonum dan select) ke kiri */  
+    .settings > :nth-child(1),  
+    .settings > :nth-child(2) {  
+      margin-right: auto;  
+    }  
+    /* Tombol info untuk peringatan */  
+    .info-btn {  
+      background: #2d88ff;  
+      border: none;  
+      border-radius: 50%;  
+      color: #fff;  
+      width: 24px;  
+      height: 24px;  
+      font-size: 14px;  
+      cursor: pointer;  
+      margin-left: 8px;  
+    }  
+    /* Tooltip warning, hidden by default */  
+    .warning-box {  
+      display: none;  
+      position: absolute;  
+      top: 100%;  
+      right: 20px;  
+      background-color: #3c3f4b;  
+      color: #ffcc00;  
+      padding: 8px 12px;  
+      margin-top: 8px;  
+      border-radius: 4px;  
+      font-size: 0.9em;  
+      max-width: 300px;  
+      z-index: 10;  
+    }  
+    .chat-container {  
+      flex: 1;  
+      overflow-y: auto;  
+      padding: 20px;  
+      background-color: #343541;  
+    }  
+    .message {  
+      padding: 16px;  
+      margin: 10px auto;  
+      max-width: 800px;  
+      border-radius: 16px;  
+      background-color: #444654;  
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);  
+      animation: fadeIn 0.3s ease;  
+    }  
+    .message-content {  
+      display: flex;  
+      gap: 16px;  
+      align-items: flex-start;  
+    }  
+    /* Sembunyikan avatar supaya nggak tampil logo "U" dan "DO" */  
+    .avatar {  
+      display: none;  
+    }  
+    .user-message {  
+      background-color: #1a73e8;  
+    }  
+    .ai-message {  
+      background-color: #444654;  
+    }  
+    .typing-indicator {  
+      display: flex;  
+      gap: 4px;  
+      padding: 12px 0;  
+      justify-content: center;  
+    }  
+    .typing-dot {  
+      width: 8px;  
+      height: 8px;  
+      background: #2d88ff;  
+      border-radius: 50%;  
+      opacity: 0.4;  
+      animation: typingAnimation 1.4s infinite;  
+    }  
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }  
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }  
+    @keyframes typingAnimation {  
+      0%, 60%, 100% { transform: translateY(0); }  
+      30% { transform: translateY(-4px); }  
+    }  
+    .input-container {  
+      background-color: #202123;  
+      border-top: 1px solid #444654;  
+      padding: 20px;  
+    }  
+    .input-wrapper {  
+      max-width: 800px;  
+      margin: 0 auto;  
+      position: relative;  
+    }  
+    input {  
+      width: 100%;  
+      padding: 12px 45px 12px 15px;  
+      background-color: #3c3f4b;  
+      border: 1px solid #2d88ff;  
+      border-radius: 8px;  
+      color: #e4e4e7;  
+      font-size: 1em;  
+      transition: border-color 0.3s ease;  
+    }  
+    input:focus {  
+      outline: none;  
+      border-color: #1a73e8;  
+    }  
+    button {  
+      position: absolute;  
+      right: 10px;  
+      top: 50%;  
+      transform: translateY(-50%);  
+      background: transparent;  
+      border: none;  
+      color: #2d88ff;  
+      cursor: pointer;  
+      padding: 5px;  
+    }  
+    .switch {  
+      position: relative;  
+      display: inline-block;  
+      width: 48px;  
+      height: 24px;  
+    }  
+    .switch input {  
+      opacity: 0;  
+      width: 0;  
+      height: 0;  
+    }  
+    .slider {  
+      position: absolute;  
+      cursor: pointer;  
+      top: 0;  
+      left: 0;  
+      right: 0;  
+      bottom: 0;  
+      background-color: #3c3f4b;  
+      transition: .4s;  
+      border-radius: 24px;  
+    }  
+    .slider:before {  
+      position: absolute;  
+      content: "";  
+      height: 18px;  
+      width: 18px;  
+      left: 3px;  
+      bottom: 3px;  
+      background-color: white;  
+      transition: .4s;  
+      border-radius: 50%;  
+    }  
+    input:checked + .slider {  
+      background-color: #2d88ff;  
+    }  
+    input:checked + .slider:before {  
+      transform: translateX(24px);  
+    }  
+    select {  
+      background-color: #3c3f4b;  
+      color: #e4e4e7;  
+      border: 1px solid #2d88ff;  
+      padding: 6px 12px;  
+      border-radius: 4px;  
+      font-size: 0.9em;  
+    }  
+    .export-btn, .clear-btn {  
+      border: none;  
+      padding: 6px 12px;  
+      border-radius: 4px;  
+      cursor: pointer;  
+      font-size: 0.9em;  
+      transition: background 0.3s;  
+      position: static;  
+    }  
+    .export-btn {  
+      background: #2d88ff;  
+      color: #fff;  
+    }  
+    .export-btn:hover {  
+      background: #1a73e8;  
+    }  
+    .clear-btn {  
+      background: #ef4444;  
+      color: #fff;  
+    }  
+    .clear-btn:hover {  
+      background: #dc2626;  
+    }  
+    @keyframes fadeIn {  
+      from { opacity: 0; }  
+      to { opacity: 1; }  
+    }  
+    /* Styling tombol sidebar */  
+    #sidebarBottomControls button {  
+      padding: 10px;  
+      background-color: #2d88ff;  
+      color: #fff;  
+      border: none;  
+      border-radius: 4px;  
+      cursor: pointer;  
+      font-size: 0.9em;  
+    }  
 
-        body {
-            background-color: #0f172a;
-            color: #fff;
-            line-height: 1.5;
-        }
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      .header, .settings, .input-container {
+        padding: 12px 10px;
+      }
+      .chat-container {
+        padding: 15px;
+      }
+      .message {
+        max-width: 95%;
+        margin: 10px 5px;
+        padding: 12px;
+      }
+      .input-wrapper {
+        max-width: 95%;
+        margin: 0 5px;
+      }
+      #leftSidebar {
+        width: 80%;
+        left: -80%;
+      }
+      #sidebarToggleBtn {
+        left: 10px;
+      }
+    }
 
-        .container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 1.5em;
+      }
+      .message {
+        font-size: 0.9em;
+      }
+      input {
+        padding: 10px 40px 10px 10px;
+      }
+    }
+  </style>  
+</head>  
+<body>  
+  <div class="container">  
+    <div class="header">  
+      <h1>Dominatus AI</h1>  
+    </div>  
+    <div class="settings">  
+      <div class="Axonum">  
+        <span>Axonum</span>  
+        <label class="switch">  
+          <input type="checkbox" id="Axonum">  
+          <span class="slider"></span>  
+        </label>  
+      </div>  
+      <select id="responseMode">  
+        <option value="normal">Normal Mode</option>  
+        <option value="gaul">Gaul Mode</option>  
+      </select>  
+      <button class="export-btn" onclick="exportChat()">Export Chat</button>  
+      <button class="clear-btn" onclick="clearChat()">Clear Chat</button>  
+      <button class="info-btn" onclick="toggleWarning()">i</button>  
+      <div class="warning-box" id="warningBox">  
+        Peringatan: Data chat disimpan secara lokal di browser Anda. Fitur Export Chat akan mengekspor seluruh riwayat percakapan yang belum dihapus. Pastikan untuk menghapus chat jika terdapat informasi sensitif.  
+      </div>  
+    </div>  
 
-        .header {
-            background-color: #1e293b;
-            padding: 12px 0;
-            text-align: center;
-            border-bottom: 1px solid #38bdf8;
-        }
+    <div class="chat-container" id="chatContainer">  
+      <div class="message ai-message">  
+        <div class="message-content">  
+          <div class="avatar">DO</div>  
+          <div>Hi! Saya Dominatus AI, asisten AI yang dibuat oleh Hafidz Nugraha. Bagaimana saya bisa membantu Anda hari ini?</div>  
+        </div>  
+      </div>  
+    </div>  
 
-        .header h1 {
-            color: #38bdf8;
-            font-size: 1.5em;
-            margin-bottom: 4px;
-        }
-
-        .header .creator {
-            color: #38bdf8;
-            font-size: 0.9em;
-        }
-
-        .settings {
-            background-color: #1e293b;
-            padding: 12px 20px;
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            align-items: center;
-            border-bottom: 1px solid #38bdf8;
-        }
-
-        .chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px 0;
-        }
-
-        .message {
-            padding: 20px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .message-content {
-            max-width: 800px;
-            margin: 0 auto;
-            display: flex;
-            gap: 20px;
-        }
-
-        .avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 2px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-
-        .user-message {
-            background-color: #38bdf8;
-        }
-
-        .ai-message {
-            background-color: #334155;
-        }
-
-        .user-message .avatar {
-            background-color: #0284c7;
-        }
-
-        .ai-message .avatar {
-            background-color: #38bdf8;
-        }
-
-        .typing-indicator {
-            display: flex;
-            gap: 4px;
-            padding: 12px 0;
-        }
-
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            background: #38bdf8;
-            border-radius: 50%;
-            opacity: 0.4;
-            animation: typingAnimation 1.4s infinite;
-        }
-
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes typingAnimation {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-4px); }
-        }
-
-        .input-container {
-            background-color: #1e293b;
-            border-top: 1px solid #38bdf8;
-            padding: 20px;
-        }
-
-        .input-wrapper {
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px 45px 12px 15px;
-            background-color: #1e293b;
-            border: 1px solid #38bdf8;
-            border-radius: 6px;
-            color: #fff;
-            font-size: 1em;
-            line-height: 1.5;
-            transition: border-color 0.3s ease;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #0284c7;
-        }
-
-        button {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: transparent;
-            border: none;
-            color: #38bdf8;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 48px;
-            height: 24px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #1e293b;
-            transition: .4s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #38bdf8;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(24px);
-        }
-
-        select {
-            background-color: #1e293b;
-            color: #fff;
-            border: 1px solid #38bdf8;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 0.9em;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Dominatus AI</h1>
-            <p class="creator">Created by Hafidz Nugraha</p>
-        </div>
-
-        <div class="settings">
-            <div class="Axonum">
-                <span>Axonum</span>
-                <label class="switch">
-                    <input type="checkbox" id="Axonum">
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <select id="responseMode">
-                <option value="normal">Normal Mode</option>
-                <option value="gaul">Gaul Mode</option>
-            </select>
-        </div>
-
-        <div class="chat-container" id="chatContainer">
-            <div class="message ai-message">
-                <div class="message-content">
-                    <div class="avatar">DO</div>
-                    <div>Hi! Saya Dominatus AI, asisten AI yang dibuat oleh Hafidz Nugraha. Bagaimana saya bisa membantu Anda hari ini?</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="input-container">
-            <div class="input-wrapper">
-                <input type="text" id="userInput" placeholder="Ketik pesan Anda di sini...">
-                <button onclick="sendMessage()">
-                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
-                </button>
-            </div>
-        </div>
+    <div class="input-container">  
+      <div class="input-wrapper">  
+        <input type="text" id="userInput" placeholder="Ketik pesan Dominatus">  
+        <button onclick="sendMessage()">  
+          <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">  
+            <line x1="22" y1="2" x2="11" y2="13"></line>  
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>  
+          </svg>  
+        </button>  
+      </div>  
     </div>
+  </div>  
 
-    <script>
-        const API_KEY = 'AIzaSyDIbybKIvhU-ensFjSM0_FB9g5Sbse8WVw';
-        const chatContainer = document.getElementById('chatContainer');
-        const userInput = document.getElementById('userInput');
-        const AxonumToggle = document.getElementById('Axonum');
-        const responseModeSelect = document.getElementById('responseMode');
+  <script>  
+    function toggleWarning() {  
+      const warningBox = document.getElementById('warningBox');  
+      warningBox.style.display = warningBox.style.display === 'block' ? 'none' : 'block';  
+    }  
 
-        function createTypingIndicator() {
-            return `
-                <div class="typing-indicator">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                </div>
-            `;
-        }
+    // Kode JavaScript aslinya tetap sama  
+    const API_KEY = 'AIzaSyDIbybKIvhU-ensFjSM0_FB9g5Sbse8WVw';  
+    const chatContainer = document.getElementById('chatContainer');  
+    const userInput = document.getElementById('userInput');  
+    const AxonumToggle = document.getElementById('Axonum');  
+    const responseModeSelect = document.getElementById('responseMode');  
+    let chatHistory = [];  
+    const encryptionKey = "dominatus_secure_key";  
 
-        function addMessage(content, className) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${className}`;
-            messageDiv.innerHTML = `
-                <div class="message-content">
-                    <div class="avatar">${className === 'user-message' ? 'U' : 'ZA'}</div>
-                    <div>${content}</div>
-                </div>
-            `;
-            chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            return messageDiv;
-        }
+    function encrypt(text) {  
+      return btoa(text);  
+    }  
+    function decrypt(encodedText) {  
+      return atob(encodedText);  
+    }  
+    function loadChatHistory() {  
+      const encrypted = localStorage.getItem('dominatus_chat');  
+      if (encrypted) {  
+        try {  
+          const decrypted = decrypt(encrypted);  
+          chatHistory = JSON.parse(decrypted);  
+          chatHistory.forEach(msg => addMessage(msg.content, msg.type));  
+        } catch (error) {  
+          console.error('Error loading chat history:', error);  
+        }  
+      }  
+    }  
+    function saveChatHistory() {  
+      localStorage.setItem('dominatus_chat', encrypt(JSON.stringify(chatHistory)));  
+    }  
+    function createTypingIndicator() {  
+      return `  
+        <div class="typing-indicator">  
+          <div class="typing-dot"></div>  
+          <div class="typing-dot"></div>  
+          <div class="typing-dot"></div>  
+        </div>  
+      `;  
+    }  
+    function addMessage(content, className) {  
+      const messageDiv = document.createElement('div');  
+      messageDiv.className = `message ${className}`;  
+      messageDiv.innerHTML = `  
+        <div class="message-content">  
+          <div class="avatar">${className === 'user-message' ? 'U' : 'DO'}</div>  
+          <div>${content}</div>  
+        </div>  
+      `;  
+      chatContainer.appendChild(messageDiv);  
+      chatContainer.scrollTop = chatContainer.scrollHeight;  
+      if (!content.includes('typing-indicator')) {  
+        chatHistory.push({  
+          content,  
+          type: className,  
+          timestamp: new Date().toISOString()  
+        });  
+        saveChatHistory();  
+      }  
+      return messageDiv;  
+    }  
+    function exportChat() {  
+      let csv = 'role,content,timestamp\n';  
+      chatHistory.forEach(msg => {  
+        const role = msg.type === 'user-message' ? 'User' : 'Dominatus AI';  
+        const content = `"${msg.content.replace(/"/g, '""')}"`;  
+        const timestamp = `"${msg.timestamp}"`;  
+        csv += `${role},${content},${timestamp}\n`;  
+      });  
+      const blob = new Blob([csv], { type: 'text/csv' });  
+      const url = URL.createObjectURL(blob);  
+      const a = document.createElement('a');  
+      a.href = url;  
+      a.download = `dominatus_chat_${new Date().toISOString().replace(/:/g, '-')}.csv`;  
+      document.body.appendChild(a);  
+      a.click();  
+      document.body.removeChild(a);  
+      URL.revokeObjectURL(url);  
+    }  
+    function clearChat() {  
+      if (confirm('Are you sure you want to clear the chat history?')) {  
+        chatContainer.innerHTML = '';  
+        chatHistory = [];  
+        localStorage.removeItem('dominatus_chat');  
+        addMessage('Hi! Saya Dominatus AI, asisten AI yang dibuat oleh Hafidz Nugraha. Bagaimana saya bisa membantu Anda hari ini?', 'ai-message');  
+      }  
+    }  
+    function formatResponse(text) {  
+      let paragraphs = text.split('\n')  
+        .filter(p => p.trim())  
+        .map(p => p.replace(/^\s*[\*\•\-]\s*/, '').replace(/\*\*/g, '').replace(/\*/g, ''));  
+      let formattedText = '';  
+      let inList = false;  
+      paragraphs.forEach(p => {  
+        p = p.trim();  
+        if (p.match(/^\d+\./)) {  
+          formattedText += p + '\n';  
+        } else if (p.length < 50 && p.endsWith(':')) {  
+          formattedText += p + '\n';  
+        } else if (p.startsWith('•') || p.startsWith('-')) {  
+          formattedText += '• ' + p.substring(1).trim() + '\n';  
+          inList = true;  
+        } else {  
+          if (inList) {  
+            formattedText += '\n';  
+            inList = false;  
+          }  
+          formattedText += p + '\n';  
+        }  
+      });  
+      return formattedText.trim();  
+    }  
+    async function sendMessage() {  
+      const message = userInput.value.trim();  
+      if (!message) return;  
+      addMessage(message, 'user-message');  
+      userInput.value = '';  
+      const loadingMessage = addMessage(createTypingIndicator(), 'ai-message');  
+      try {  
+        const recentContext = chatHistory  
+          .slice(-4)  
+          .map(msg => `${msg.type === 'user-message' ? 'User' : 'Assistant'}: ${msg.content}`)  
+          .join('\n');  
+        const response = await generateResponse(message, recentContext);  
+        loadingMessage.remove();  
+        addMessage(response, 'ai-message');  
+      } catch (error) {  
+        loadingMessage.remove();  
+        addMessage('Maaf, terjadi kesalahan. Silakan coba lagi.', 'ai-message');  
+      }  
+    }  
+    async function generateResponse(message, context) {  
+      const Axonum = AxonumToggle.checked;  
+      const responseMode = responseModeSelect.value;  
+      const systemPrompt = `  
+                Kamu adalah Dominatus AI, asisten AI yang dibuat oleh Hafidz Nugraha.  
+                Panduan format jawaban:  
+                1. Gunakan format yang bersih tanpa simbol khusus.  
+                2. Untuk daftar, gunakan nomor atau poin sederhana.  
+                3. Pisahkan setiap bagian dengan baris kosong.  
+                4. ${Axonum ? 'Berikan penjelasan yang terstruktur dan mendalam, kayak lo lagi ngulik insight keren yang bener-bener ngebantu, supaya jawabannya detail dan ciamik.' : 'Berikan jawaban ringkas dan jelas.'}  
+                5. ${responseMode === 'gaul' ? 'Pake bahasa gaul yang santai dan asik, kayak lo ngobrol sama temen, jangan terlalu resmi bro!' : 'Gunakan bahasa formal yang sopan.'}  
+                6. Jangan gunakan simbol seperti *, -, atau markup lainnya.  
 
-        async function sendMessage() {
-            const message = userInput.value.trim();
-            if (!message) return;
+                Konteks percakapan sebelumnya:  
+                ${context}  
+            `;  
+      const prompt = `${systemPrompt}\n\nUser: ${message}`;  
+      try {  
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {  
+          method: 'POST',  
+          headers: { 'Content-Type': 'application/json' },  
+          body: JSON.stringify({  
+            contents: [{ parts: [{ text: prompt }] }],  
+            generationConfig: {  
+              temperature: responseMode === 'gaul' ? 0.7 : 0.5,  
+              topK: 40,  
+              topP: 0.95,  
+              maxOutputTokens: 1024,  
+            }  
+          })  
+        });  
+        const data = await response.json();  
+        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0]) {  
+          throw new Error("Invalid API response structure");  
+        }  
+        let aiResponse = data.candidates[0].content.parts[0].text;  
+        aiResponse = formatResponse(aiResponse);  
+        return aiResponse;  
+      } catch (error) {  
+        console.error('Error:', error);  
+        throw error;  
+      }  
+    }  
+    userInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });  
+    userInput.addEventListener('input', e => {  
+      const text = e.target.value.toLowerCase();  
+      if (text.includes('siapa pembuat') || text.includes('siapa yang buat') || text.includes('who created')) {  
+        const suggestion = addMessage('Saya adalah Dominatus AI, dibuat oleh Hafidz Nugraha. Saya bangga menjadi asisten AI buatannya!', 'ai-message');  
+        setTimeout(() => suggestion.remove(), 5000);  
+      }  
+    });  
+    document.addEventListener('DOMContentLoaded', loadChatHistory);  
+  </script>  
 
-            addMessage(message, 'user-message');
-            userInput.value = '';
+  <!-- Sidebar Injection -->  
+  <script>  
+  document.addEventListener('DOMContentLoaded', function() {  
+    // Buat sidebar kiri untuk Kontrol Data  
+    var leftSidebar = document.createElement('div');  
+    leftSidebar.id = 'leftSidebar';  
+    leftSidebar.style.position = 'fixed';  
+    leftSidebar.style.top = '0';  
+    leftSidebar.style.left = '-250px'; // hidden awal  
+    leftSidebar.style.width = '250px';  
+    leftSidebar.style.height = '100%';  
+    leftSidebar.style.backgroundColor = '#202123';  
+    leftSidebar.style.color = '#e4e4e7';  
+    leftSidebar.style.padding = '20px';  
+    leftSidebar.style.transition = 'left 0.3s ease';  
+    leftSidebar.style.zIndex = '1001';  
+      
+    // Tambahkan konten Pengaturan Data  
+    var controlDataContent = document.createElement('div');  
+    controlDataContent.id = 'controlDataContent';  
+    controlDataContent.innerHTML = `  
+      <h2 style="margin-top:20px; font-size:1.2em;">Pengaturan Data</h2>  
+      <label style="display:block; margin-top:10px;">  
+        <input type="checkbox" id="disableStorageSidebar"> Nonaktifkan penyimpanan chat  
+      </label>  
+    `;  
+    leftSidebar.appendChild(controlDataContent);  
+      
+    // Buat container untuk tombol di bagian bawah sidebar  
+    var bottomContainer = document.createElement('div');  
+    bottomContainer.id = 'sidebarBottomControls';  
+    bottomContainer.style.position = 'absolute';  
+    bottomContainer.style.bottom = '20px';  
+    bottomContainer.style.left = '20px';  
+    bottomContainer.style.right = '20px';  
+    bottomContainer.style.display = 'flex';  
+    bottomContainer.style.flexDirection = 'column';  
+    bottomContainer.style.gap = '10px';  
+      
+    // Buat tombol-tombol yang diperlukan  
+    var controlDataBtn = document.createElement('button');  
+    controlDataBtn.textContent = 'Pengaturan Data';  
+    controlDataBtn.addEventListener('click', function(){  
+      alert('Fitur Pengaturan Data belum diimplementasikan.');  
+    });  
+      
+    var aboutMeBtn = document.createElement('button');  
+    aboutMeBtn.textContent = 'Tentang Saya';  
+    aboutMeBtn.style.flex = '1';  
+    aboutMeBtn.addEventListener('click', function(){  
+      alert('Dominatus AI dibuat oleh Hafidz Nugraha.');  
+    });  
+      
+    var updatePatchBtn = document.createElement('button');  
+    updatePatchBtn.textContent = 'Update Patch AI';  
+    updatePatchBtn.style.flex = '1';  
+    updatePatchBtn.addEventListener('click', function(){  
+      alert('Patch AI terbaru: [Menambahkan fitur export chat biar bisa disave,edit. Fitur kontrol data agar data Anda jadi lebih privasi].');  
+    });  
+      
+    // Buat row untuk tombol Pengaturan Data (full width)  
+    var row1 = document.createElement('div');  
+    row1.style.width = '100%';  
+    row1.appendChild(controlDataBtn);  
+      
+    // Buat row untuk tombol Tentang Saya (kiri) dan Update Patch AI (kanan)  
+    var row2 = document.createElement('div');  
+    row2.style.display = 'flex';  
+    row2.style.justifyContent = 'space-between';  
+    row2.appendChild(aboutMeBtn);  
+    row2.appendChild(updatePatchBtn);  
+      
+    // Append row ke container  
+    bottomContainer.appendChild(row1);  
+    bottomContainer.appendChild(row2);  
+      
+    // Append container tombol ke sidebar  
+    leftSidebar.appendChild(bottomContainer);  
+      
+    document.body.appendChild(leftSidebar);  
+      
+    // Buat toggle button dengan 3 bar (hamburger) di pojok kiri atas  
+    var toggleBtn = document.createElement('button');  
+    toggleBtn.id = 'sidebarToggleBtn';  
+    toggleBtn.style.position = 'fixed';  
+    toggleBtn.style.top = '10px';  
+    toggleBtn.style.left = '10px';  
+    toggleBtn.style.background = 'transparent';  
+    toggleBtn.style.border = 'none';  
+    toggleBtn.style.cursor = 'pointer';  
+    toggleBtn.style.outline = 'none';  
+    toggleBtn.style.width = '30px';  
+    toggleBtn.style.height = '30px';  
+    toggleBtn.style.display = 'flex';  
+    toggleBtn.style.flexDirection = 'column';  
+    toggleBtn.style.justifyContent = 'space-around';  
+    toggleBtn.style.alignItems = 'center';  
+    toggleBtn.style.zIndex = '1002';  
+      
+    // Buat 3 bar  
+    var bar1 = document.createElement('span');  
+    var bar2 = document.createElement('span');  
+    var bar3 = document.createElement('span');  
+    [bar1, bar2, bar3].forEach(function(bar) {  
+      bar.style.display = 'block';  
+      bar.style.width = '100%';  
+      bar.style.height = '3px';  
+      bar.style.backgroundColor = '#2d88ff';  
+      bar.style.transition = 'all 0.3s ease';  
+    });  
+    toggleBtn.appendChild(bar1);  
+    toggleBtn.appendChild(bar2);  
+    toggleBtn.appendChild(bar3);  
+      
+    document.body.appendChild(toggleBtn);  
+      
+    var sidebarVisible = false;  
+    toggleBtn.addEventListener('click', function() {  
+      if (sidebarVisible) {  
+        leftSidebar.style.left = '-250px';  
+        // Reset hamburger animation  
+        bar1.style.transform = 'rotate(0) translate(0, 0)';  
+        bar2.style.opacity = '1';  
+        bar3.style.transform = 'rotate(0) translate(0, 0)';  
+      } else {  
+        leftSidebar.style.left = '0';  
+        // Ubah menjadi X: bar1 dan bar3 berotasi, bar2 hilang  
+        bar1.style.transform = 'rotate(45deg) translate(5px, 5px)';  
+        bar2.style.opacity = '0';  
+        bar3.style.transform = 'rotate(-45deg) translate(5px, -5px)';  
+      }  
+      sidebarVisible = !sidebarVisible;  
+    });  
+  });  
+  </script>  
 
-            const loadingMessage = addMessage(createTypingIndicator(), 'ai-message');
-
-            try {
-                const response = await generateResponse(message);
-                loadingMessage.remove();
-                addMessage(response, 'ai-message');
-            } catch (error) {
-                loadingMessage.remove();
-                addMessage('Maaf, terjadi kesalahan. Silakan coba lagi.', 'ai-message');
-            }
-        }
-
-        async function generateResponse(message) {
-            const Axonum = AxonumToggle.checked;
-            const responseMode = responseModeSelect.value;
-
-            const systemPrompt = `
-                Kamu adalah Dominatus AI, sebuah AI assistant yang dibuat oleh Hafidz Nugraha.
-                ${Axonum ? 'Berikan analisis yang mendalam dan mendetail.' : ''}
-                ${responseMode === 'gaul' ? 'Gunakan bahasa gaul dan santai ala anak muda Indonesia.' : 'Gunakan bahasa Indonesia yang formal dan sopan.'}
-                Selalu sebutkan bahwa kamu adalah Dominatus AI buatan Hafidz Nugraha.
-            `;
-
-            const prompt = `${systemPrompt}\n\nUser: ${message}`;
-
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{
-                                text: prompt
-                            }]
-                        }]
-                    })
-                });
-
-                const data = await response.json();
-                return data.candidates[0].content.parts[0].text;
-            } catch (error) {
-                console.error('Error:', error);
-                throw error;
-            }
-        }
-
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        userInput.addEventListener('input', (e) => {
-            const text = e.target.value.toLowerCase();
-            if (text.includes('siapa pembuat') || text.includes('siapa yang buat') || text.includes('who created')) {
-                const suggestion = addMessage('Saya adalah Dominatus AI, dibuat oleh Hafidz Nugraha. Saya bangga menjadi asisten AI buatannya!', 'ai-message');
-                setTimeout(() => suggestion.remove(), 5000);
-            }
-        });
-    </script>
-</body>
+  <!-- Injeksi repositioning tombol Mode & teman-teman (Axonum, Export Chat, Clear Chat) ke bawah area ketik pesan -->  
+  <script>  
+  document.addEventListener('DOMContentLoaded', function() {  
+    var bottomControlsDiv = document.createElement('div');  
+    bottomControlsDiv.id = 'bottomControls';  
+    bottomControlsDiv.style.display = 'flex';  
+    bottomControlsDiv.style.flexDirection = 'row';  
+    bottomControlsDiv.style.justifyContent = 'center';  
+    bottomControlsDiv.style.gap = '10px';  
+    bottomControlsDiv.style.marginTop = '10px';  
+  
+    var settingsDiv = document.querySelector('.settings');  
+    if (settingsDiv) {  
+      // Pindahin Axonum  
+      var axonumEl = settingsDiv.querySelector('.Axonum');  
+      if (axonumEl) {  
+        axonumEl.parentNode.removeChild(axonumEl);  
+        bottomControlsDiv.appendChild(axonumEl);  
+      }  
+      // Pindahin Export Chat  
+      var exportBtn = settingsDiv.querySelector('.export-btn');  
+      if (exportBtn) {  
+        exportBtn.parentNode.removeChild(exportBtn);  
+        bottomControlsDiv.appendChild(exportBtn);  
+      }  
+      // Pindahin Clear Chat  
+      var clearBtn = settingsDiv.querySelector('.clear-btn');  
+      if (clearBtn) {  
+        clearBtn.parentNode.removeChild(clearBtn);  
+        bottomControlsDiv.appendChild(clearBtn);  
+      }  
+    }  
+    // Buat tombol Mode toggle: sembunyikan select asli, dan buat tombol baru  
+    var modeSelect = document.getElementById('responseMode');  
+    if (modeSelect) {  
+      modeSelect.style.display = 'none';  
+      var modeButton = document.createElement('button');  
+      modeButton.id = 'modeToggleButton';  
+      modeButton.style.background = '#2d88ff';  
+      modeButton.style.color = '#fff';  
+      modeButton.style.border = 'none';  
+      modeButton.style.padding = '6px 12px';  
+      modeButton.style.borderRadius = '4px';  
+      modeButton.style.cursor = 'pointer';  
+      modeButton.textContent = modeSelect.value === 'normal' ? 'Mode: Normal' : 'Mode: Gaul';  
+      modeButton.addEventListener('click', function() {  
+        if (modeSelect.value === 'normal') {  
+          modeSelect.value = 'gaul';  
+          modeButton.textContent = 'Mode: Gaul';  
+        } else {  
+          modeSelect.value = 'normal';  
+          modeButton.textContent = 'Mode: Normal';  
+        }  
+      });  
+      bottomControlsDiv.appendChild(modeButton);  
+    }  
+    var inputContainer = document.querySelector('.input-container');  
+    if (inputContainer && inputContainer.parentNode) {  
+      // Pindahkan tombol Mode (bersama Axonum, Export Chat, Clear Chat) ke bawah area ketik pesan  
+      inputContainer.parentNode.insertBefore(bottomControlsDiv, inputContainer.nextSibling);  
+    }  
+  });  
+  </script>  
+</body>  
 </html>
